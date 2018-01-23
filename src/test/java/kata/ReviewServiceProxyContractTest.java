@@ -32,21 +32,34 @@ public class ReviewServiceProxyContractTest {
         params.put("productId", "123");
         params.put("userName", "ben");
 
-        return builder.given("The ratings in Review service are ready", params)
+        return builder
+                .given("The ratings in Review service are ready", params)
                 .uponReceiving("A request for ratings for a product")
-                .path("/ratings")
-                .query("productId=123&userName=ben")
-                .method("GET")
+                    .path("/ratings")
+                    .query("productId=123&userName=ben")
+                    .method("GET")
                 .willRespondWith()
-                .headers(responseHeaders())
-                .status(200)
-                .body(new PactDslJsonArray().arrayEachLike()
-                        .stringMatcher("productId", "^[0-9][0-9][0-9][0-9][0-9][0-9]$", "123456")
-                        .stringMatcher("userName", "[a-z]+", "ben")
-                        .stringMatcher("rating", "^[0-5]$", "5")
-                )
+                    .headers(responseHeaders())
+                    .status(200)
+                    .body(new PactDslJsonArray().arrayEachLike()
+                            .stringMatcher("productId", "^[0-9][0-9][0-9][0-9][0-9][0-9]$", "123456")
+                            .stringMatcher("userName", "[a-z]+", "ben")
+                            .stringMatcher("rating", "^[0-5]$", "5")
+                    )
+                .given("The products in Review service are ready")
+                .uponReceiving("A request for products")
+                    .path("/products")
+                    .method("GET")
+                .willRespondWith()
+                    .headers(responseHeaders())
+                    .status(200)
+                    .body(new PactDslJsonArray().arrayEachLike()
+                            .stringMatcher("productId", "^[0-9][0-9][0-9][0-9][0-9][0-9]$", "123456")
+                            .stringMatcher("name", ".+", "iphone 手机")
+                    )
                 .toPact();
     }
+
 
     @NotNull
     private Map<String, String> responseHeaders() {
@@ -68,5 +81,21 @@ public class ReviewServiceProxyContractTest {
         assertThat(actual.get(0).getRating(), instanceOf(String.class));
         assertThat(Integer.valueOf(actual.get(0).getRating()), greaterThanOrEqualTo(0));
         assertThat(Integer.valueOf(actual.get(0).getRating()), lessThanOrEqualTo(5));
+
+        should_get_a_list_of_products();
+
+    }
+
+    public void should_get_a_list_of_products() {
+        ReviewServiceProxy reviewServiceProxy = new ReviewServiceProxy("http://localhost:8080/products");
+
+        final List<Product> products = reviewServiceProxy.getProducts();
+
+        assertThat(products.get(0).getName(), instanceOf(String.class));
+//        assertThat(actual.get(0).getProductId().length(), is(6));
+//        assertThat(actual.get(0).getUserName(), instanceOf(String.class));
+//        assertThat(actual.get(0).getRating(), instanceOf(String.class));
+//        assertThat(Integer.valueOf(actual.get(0).getRating()), greaterThanOrEqualTo(0));
+//        assertThat(Integer.valueOf(actual.get(0).getRating()), lessThanOrEqualTo(5));
     }
 }

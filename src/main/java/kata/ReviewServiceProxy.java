@@ -21,6 +21,11 @@ public class ReviewServiceProxy {
         this.restTemplate = new RestTemplate();
     }
 
+    public List<Product> getProducts() {
+        ParameterizedTypeReference<List<Product>> responseType = new ParameterizedTypeReference<List<Product>>() {};
+        return restTemplate.exchange(url, HttpMethod.GET, null, responseType).getBody();
+    }
+
     public List<Rating> getRatings() {
         ParameterizedTypeReference<List<Rating>> responseType = new ParameterizedTypeReference<List<Rating>>() {};
         return restTemplate.exchange(url, HttpMethod.GET, null, responseType).getBody();
